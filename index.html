@@ -1,0 +1,100 @@
+<!--
+If you don't get this joke, this page is telling you if you need an umbrella today.
+You need location browser stuff turned on. 
+-->
+
+<html>
+	
+	<head>
+		<style>
+			body {
+				margin: 100px 0px;
+			}
+			#stuff {
+				width: 100%;
+				height: 100%;
+				text-align: center;
+				//display: none;
+			}
+		</style>
+	</head>
+	
+	<body>
+		<div id="stuff">
+			hmmm
+		</div>
+    <script>
+      /* copied and pasted from https://github.com/adactio/FitText.js because
+       * I'm a horrible, lazy person who loves things on a single page */
+      (function(){
+        var css = function (el, prop) {
+          if (window.getComputedStyle) {
+            return getComputedStyle(el).getPropertyValue(prop);
+          } else {
+            return del.currentStyle[prop];
+          }
+        };
+        var addEvent = function (el, type, fn) {
+          if (el.addEventListener)
+            el.addEventListener(type, fn, false);
+          else
+            el.attachEvent('on'+type, fn);
+        };
+        window.fitText = function (el, kompressor) {
+          var settings = {
+            'minFontSize' : -1/0,
+            'maxFontSize' : 1/0
+          };
+          var fit = function (el) {
+            var compressor = kompressor || 1;
+            var resizer = function () {
+              el.style.fontSize = Math.max(
+                Math.min(
+                  el.clientWidth / (compressor*10),
+                  parseFloat(settings.maxFontSize)
+                ),
+                parseFloat(settings.minFontSize)) + 'px';
+            };
+            resizer();
+            addEvent(window, 'resize', resizer);
+          };
+          if (el.length)
+            for(var i=0; i<el.length; i++)
+              fit(el[i]);
+          else
+            fit(el);
+          return el;
+        };
+      })();
+
+      /* DO IT */
+      var endpoint = 'https://api.forecast.io/forecast'
+        , superSecretKey = '64b8b1502c0c70507936c7392551ca17'
+        , options = 'exclude=minutly,hourly,alerts,flags'
+        , $message = document.getElementById('stuff')
+
+      window.fitText($message)
+
+      if (!navigator.geolocation) {
+        $message.textContent = 'where are you?'
+      }
+
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        var loc = pos.coords.latitude + ',' + pos.coords.longitude
+          , script = document.createElement('script')
+
+          script.src = endpoint + '/' + superSecretKey + '/' + loc + '?' + options + '&callback=parseWeatherCb'
+          document.body.appendChild(script)
+      })
+
+      function parseWeatherCb(res) {
+        console.log(res)
+        if (res.currently.summary.match(/(\s|^)rain/i)) {
+          $message.textContent = 'yes'
+        } else {
+          $message.textContent = 'no'
+        }
+      }
+		</script>
+	</body>
+</html>
